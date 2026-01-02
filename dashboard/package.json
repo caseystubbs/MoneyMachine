@@ -11,12 +11,15 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
+    "@prisma/client": "^5.22.0",
     "@tremor/react": "^3.18.7",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
+    "prisma": "^5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "stripe": "^20.1.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

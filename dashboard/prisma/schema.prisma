@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  date        DateTime // The actual date of the sale/expense
+  amount      Float    // Positive for income, Negative for expense
+  source      String   // "Stripe", "PayPal", "Amex"
+  type        String   // "Income" or "Expense"
+  category    String?  // "Ads", "Hosting", "Software", "Sales"
+  description String?  // "Payment from Customer X"
+}
