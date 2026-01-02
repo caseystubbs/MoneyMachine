@@ -5,7 +5,7 @@ const stripe = new Stripe((process.env.STRIPE_SECRET_KEY || '').trim(), {
   apiVersion: '2025-12-15.clover',
 });
 
-export const revalidate = 60; // Refresh data every minute
+export const revalidate = 0; // Refresh data every minute
 
 // --- Helper: Get PayPal Access Token ---
 async function getPayPalAccessToken() {
