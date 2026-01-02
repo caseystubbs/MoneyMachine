@@ -1,8 +1,8 @@
 import Stripe from 'stripe';
 
-// Initialize Stripe
+// Initialize Stripe with the correct 2026 version
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia', // Use latest stable version or remove this line if unsure
+  apiVersion: '2025-12-15.clover', 
 });
 
 export const revalidate = 60; // Refresh data every 60 seconds
