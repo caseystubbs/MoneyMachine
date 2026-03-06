@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { monthlySummary } from "@/data/monthlySummary";
-
+import { monthlySummary, type MonthlySummary } from "../../../dashboard/data/monthlySummary";
 export async function GET(
   _req: NextRequest,
   context: { params: Promise<{ monthkey: string }> }
 ) {
   const { monthkey } = await context.params;
 
-  const selected = monthlySummary.find((m) => m.monthKey === monthkey);
+  const selected = monthlySummary.find(
+    (m: MonthlySummary) => m.monthKey === monthkey
+  );
 
   if (!selected) {
     return NextResponse.json(
@@ -29,11 +30,11 @@ export async function GET(
     { category: "Software", amount: selected.expenseBreakdown.software },
     { category: "Contractors", amount: selected.expenseBreakdown.contractors },
     { category: "Rent", amount: selected.expenseBreakdown.rent },
-    { category: "Fees", amount: selected.expenseBreakdown.fees },
+    { category: "Fees", amount: Math.abs(selected.expenseBreakdown.fees) },
     { category: "Other", amount: selected.expenseBreakdown.other },
   ].filter((e) => Math.abs(e.amount) > 0);
 
-  const monthlyTrend = monthlySummary.map((m) => ({
+  const monthlyTrend = monthlySummary.map((m: MonthlySummary) => ({
     month: m.monthKey,
     revenue: m.grossRevenue,
     expenses: m.expenses,
@@ -42,7 +43,7 @@ export async function GET(
 
   const transactions = revenueBySource.map((r, i) => ({
     id: `rev-${i}`,
-    date: selected.monthKey + "-01",
+    date: `${selected.monthKey}-01`,
     description: `${r.source} revenue`,
     source: r.source,
     type: "INCOME",
@@ -53,7 +54,7 @@ export async function GET(
   expenseBreakdown.forEach((e, i) => {
     transactions.push({
       id: `exp-${i}`,
-      date: selected.monthKey + "-01",
+      date: `${selected.monthKey}-01`,
       description: `${e.category} expense`,
       source: "SHEET",
       type: "EXPENSE",
