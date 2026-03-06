@@ -1,8 +1,13 @@
+export type DetailItem = {
+  label: string;
+  amount: number;
+};
+
 export type MonthlySummary = {
   month: string;
   monthKey: string;
   grossRevenue: number;
-  fees: number; // negative for display consistency
+  fees: number;
   netRevenue: number;
   expenses: number;
   netProfit: number;
@@ -19,7 +24,14 @@ export type MonthlySummary = {
     contractors: number;
     rent: number;
     fees: number;
-    other: number;
+    unmapped: number;
+  };
+  expenseDetails: {
+    software: DetailItem[];
+    contractors: DetailItem[];
+    rent: DetailItem[];
+    fees: DetailItem[];
+    unmapped: DetailItem[];
   };
 };
 
@@ -36,7 +48,7 @@ export const monthlySummary: MonthlySummary[] = [
     revenueSources: {
       paypal: 2425.47,
       youtube: 0,
-      stripe: 1800,
+      stripe: 1800.0,
       paymentsAi: 0,
       substack: 0,
     },
@@ -45,7 +57,14 @@ export const monthlySummary: MonthlySummary[] = [
       contractors: 0,
       rent: 0,
       fees: 175.52,
-      other: 226.74,
+      unmapped: 226.74,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 407.02 }],
+      contractors: [],
+      rent: [],
+      fees: [{ label: "Merchant / Processing Fees", amount: 175.52 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: 226.74 }],
     },
   },
   {
@@ -58,7 +77,7 @@ export const monthlySummary: MonthlySummary[] = [
     netProfit: 3731.0,
     profitMargin: 0.8364289349,
     revenueSources: {
-      paypal: 2400,
+      paypal: 2400.0,
       youtube: 0,
       stripe: 2060.63,
       paymentsAi: 0,
@@ -69,7 +88,14 @@ export const monthlySummary: MonthlySummary[] = [
       contractors: 105.5,
       rent: 0,
       fees: 225.42,
-      other: -97.04,
+      unmapped: -97.04,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 346.89 }],
+      contractors: [{ label: "Contractors", amount: 105.5 }],
+      rent: [],
+      fees: [{ label: "Merchant / Processing Fees", amount: 225.42 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -97.04 }],
     },
   },
   {
@@ -93,7 +119,14 @@ export const monthlySummary: MonthlySummary[] = [
       contractors: 233.88,
       rent: 0,
       fees: 160.23,
-      other: 710.67,
+      unmapped: 710.67,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 717.96 }],
+      contractors: [{ label: "Contractors", amount: 233.88 }],
+      rent: [],
+      fees: [{ label: "Merchant / Processing Fees", amount: 160.23 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: 710.67 }],
     },
   },
   {
@@ -106,7 +139,7 @@ export const monthlySummary: MonthlySummary[] = [
     netProfit: 178.07,
     profitMargin: 0.1013731228,
     revenueSources: {
-      paypal: 600,
+      paypal: 600.0,
       youtube: 0,
       stripe: 1156.58,
       paymentsAi: 0,
@@ -117,7 +150,14 @@ export const monthlySummary: MonthlySummary[] = [
       contractors: 938.38,
       rent: 0,
       fees: 144.08,
-      other: -339.67,
+      unmapped: -339.67,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 793.96 }],
+      contractors: [{ label: "Contractors", amount: 938.38 }],
+      rent: [],
+      fees: [{ label: "Merchant / Processing Fees", amount: 144.08 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -339.67 }],
     },
   },
   {
@@ -130,7 +170,7 @@ export const monthlySummary: MonthlySummary[] = [
     netProfit: 6813.09,
     profitMargin: 0.7896863435,
     revenueSources: {
-      paypal: 4500,
+      paypal: 4500.0,
       youtube: 0,
       stripe: 4127.59,
       paymentsAi: 0,
@@ -141,7 +181,14 @@ export const monthlySummary: MonthlySummary[] = [
       contractors: 938.38,
       rent: 0,
       fees: 456.63,
-      other: -786.94,
+      unmapped: -786.94,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 1000.7 }],
+      contractors: [{ label: "Contractors", amount: 938.38 }],
+      rent: [],
+      fees: [{ label: "Merchant / Processing Fees", amount: 456.63 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -786.94 }],
     },
   },
   {
@@ -150,22 +197,29 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 10243.32,
     fees: -515.38,
     netRevenue: 9943.17,
-    expenses: 4614.52,
+    expenses: 5872.05,
     netProfit: 4071.12,
     profitMargin: 0.3974414545,
     revenueSources: {
-      paypal: 6830,
+      paypal: 6830.0,
       youtube: 0,
-      stripe: 2800,
+      stripe: 2800.0,
       paymentsAi: 0,
       substack: 613.32,
     },
     expenseBreakdown: {
       software: 1095.16,
       contractors: 1220.31,
-      rent: 1950,
+      rent: 1950.0,
       fees: 515.38,
-      other: -166.33,
+      unmapped: 1091.2,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 1095.16 }],
+      contractors: [{ label: "Contractors", amount: 1220.31 }],
+      rent: [{ label: "Rent", amount: 1950.0 }],
+      fees: [{ label: "Merchant / Processing Fees", amount: 515.38 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: 1091.2 }],
     },
   },
   {
@@ -174,11 +228,11 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 4492.1,
     fees: -515.38,
     netRevenue: 4191.95,
-    expenses: 2556.92,
+    expenses: 3581.62,
     netProfit: 610.33,
     profitMargin: 0.1358674117,
     revenueSources: {
-      paypal: 1500,
+      paypal: 1500.0,
       youtube: 0,
       stripe: 2646.05,
       paymentsAi: 0,
@@ -189,7 +243,14 @@ export const monthlySummary: MonthlySummary[] = [
       contractors: 1220.31,
       rent: 0,
       fees: 515.38,
-      other: -601.68,
+      unmapped: 422.99,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 1422.91 }],
+      contractors: [{ label: "Contractors", amount: 1220.31 }],
+      rent: [],
+      fees: [{ label: "Merchant / Processing Fees", amount: 515.38 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: 422.99 }],
     },
   },
   {
@@ -198,22 +259,29 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 8128.65,
     fees: -253.19,
     netRevenue: 8032.41,
-    expenses: 2742.83,
+    expenses: 2770.98,
     netProfit: 5261.43,
     profitMargin: 0.6472698419,
     revenueSources: {
       paypal: 2180.22,
       youtube: 0,
-      stripe: 3888,
-      paymentsAi: 1794,
+      stripe: 3888.0,
+      paymentsAi: 1794.0,
       substack: 266.43,
     },
     expenseBreakdown: {
       software: 1306.81,
       contractors: 1220.31,
-      rent: 650,
+      rent: 650.0,
       fees: 253.19,
-      other: -687.48,
+      unmapped: -659.33,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 1306.81 }],
+      contractors: [{ label: "Contractors", amount: 1220.31 }],
+      rent: [{ label: "Rent", amount: 650.0 }],
+      fees: [{ label: "Merchant / Processing Fees", amount: 253.19 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -659.33 }],
     },
   },
   {
@@ -222,22 +290,29 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 22865.31,
     fees: -759.19,
     netRevenue: 22581.14,
-    expenses: 3951.61,
+    expenses: 4592.59,
     netProfit: 17988.55,
     profitMargin: 0.7867179583,
     revenueSources: {
       paypal: 9708.98,
       youtube: 0,
-      stripe: 9455,
+      stripe: 9455.0,
       paymentsAi: 2580.59,
       substack: 1120.74,
     },
     expenseBreakdown: {
       software: 2228.21,
-      contractors: 1202,
-      rent: 650,
+      contractors: 1202.0,
+      rent: 650.0,
       fees: 759.19,
-      other: -887.79,
+      unmapped: -246.81,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 2228.21 }],
+      contractors: [{ label: "Contractors", amount: 1202.0 }],
+      rent: [{ label: "Rent", amount: 650.0 }],
+      fees: [{ label: "Merchant / Processing Fees", amount: 759.19 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -246.81 }],
     },
   },
   {
@@ -246,22 +321,29 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 21122.62,
     fees: -769.41,
     netRevenue: 20852.26,
-    expenses: 4909.24,
+    expenses: 5004.61,
     netProfit: 15847.65,
     profitMargin: 0.7502691427,
     revenueSources: {
       paypal: 6519.62,
-      youtube: 776,
-      stripe: 10770,
-      paymentsAi: 2446,
-      substack: 611,
+      youtube: 776.0,
+      stripe: 10770.0,
+      paymentsAi: 2446.0,
+      substack: 611.0,
     },
     expenseBreakdown: {
       software: 3651.53,
       contractors: 1711.66,
-      rent: 650,
+      rent: 650.0,
       fees: 769.41,
-      other: -1873.36,
+      unmapped: -1778.0,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 3651.53 }],
+      contractors: [{ label: "Contractors", amount: 1711.66 }],
+      rent: [{ label: "Rent", amount: 650.0 }],
+      fees: [{ label: "Merchant / Processing Fees", amount: 769.41 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -1778.0 }],
     },
   },
   {
@@ -270,22 +352,29 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 12433.24,
     fees: -513.29,
     netRevenue: 12129.19,
-    expenses: 4532.94,
+    expenses: 4932.94,
     netProfit: 7196.25,
     profitMargin: 0.5787912081,
     revenueSources: {
       paypal: 6187.42,
-      youtube: 776,
-      stripe: 5288,
+      youtube: 776.0,
+      stripe: 5288.0,
       paymentsAi: 0,
       substack: 181.82,
     },
     expenseBreakdown: {
       software: 2546.8,
       contractors: 1849.88,
-      rent: 650,
+      rent: 650.0,
       fees: 513.29,
-      other: -1026.03,
+      unmapped: -627.03,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 2546.8 }],
+      contractors: [{ label: "Contractors", amount: 1849.88 }],
+      rent: [{ label: "Rent", amount: 650.0 }],
+      fees: [{ label: "Merchant / Processing Fees", amount: 513.29 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: -627.03 }],
     },
   },
   {
@@ -294,7 +383,7 @@ export const monthlySummary: MonthlySummary[] = [
     grossRevenue: 6541.41,
     fees: -269.07,
     netRevenue: 6403.07,
-    expenses: 3301.03,
+    expenses: 3401.03,
     netProfit: 3002.04,
     profitMargin: 0.4589285796,
     revenueSources: {
@@ -307,9 +396,16 @@ export const monthlySummary: MonthlySummary[] = [
     expenseBreakdown: {
       software: 1426.29,
       contractors: 934.41,
-      rent: 650,
+      rent: 650.0,
       fees: 269.07,
-      other: 21.26,
+      unmapped: 121.26,
+    },
+    expenseDetails: {
+      software: [{ label: "Software / Tools", amount: 1426.29 }],
+      contractors: [{ label: "Contractors", amount: 934.41 }],
+      rent: [{ label: "Rent", amount: 650.0 }],
+      fees: [{ label: "Merchant / Processing Fees", amount: 269.07 }],
+      unmapped: [{ label: "Needs category mapping from spreadsheet", amount: 121.26 }],
     },
   },
 ];

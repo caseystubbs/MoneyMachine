@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { monthlySummary, type MonthlySummary } from "../../../dashboard/data/monthlySummary";
+import {
+  monthlySummary,
+  type MonthlySummary,
+} from "../../../dashboard/data/monthlySummary";
+
 export async function GET(
   _req: NextRequest,
   context: { params: Promise<{ monthkey: string }> }
@@ -27,11 +31,31 @@ export async function GET(
   ].filter((r) => r.amount > 0);
 
   const expenseBreakdown = [
-    { category: "Software", amount: selected.expenseBreakdown.software },
-    { category: "Contractors", amount: selected.expenseBreakdown.contractors },
-    { category: "Rent", amount: selected.expenseBreakdown.rent },
-    { category: "Fees", amount: Math.abs(selected.expenseBreakdown.fees) },
-    { category: "Other", amount: selected.expenseBreakdown.other },
+    {
+      category: "Software",
+      amount: selected.expenseBreakdown.software,
+      details: selected.expenseDetails.software,
+    },
+    {
+      category: "Contractors",
+      amount: selected.expenseBreakdown.contractors,
+      details: selected.expenseDetails.contractors,
+    },
+    {
+      category: "Rent",
+      amount: selected.expenseBreakdown.rent,
+      details: selected.expenseDetails.rent,
+    },
+    {
+      category: "Fees",
+      amount: Math.abs(selected.expenseBreakdown.fees),
+      details: selected.expenseDetails.fees,
+    },
+    {
+      category: "Unmapped",
+      amount: selected.expenseBreakdown.unmapped,
+      details: selected.expenseDetails.unmapped,
+    },
   ].filter((e) => Math.abs(e.amount) > 0);
 
   const monthlyTrend = monthlySummary.map((m: MonthlySummary) => ({
@@ -63,8 +87,14 @@ export async function GET(
     });
   });
 
+  const availableMonths = monthlySummary.map((m: MonthlySummary) => ({
+    label: `${m.month} ${m.monthKey.slice(0, 4)}`,
+    value: m.monthKey,
+  }));
+
   return NextResponse.json({
     monthKey: selected.monthKey,
+    availableMonths,
     kpis: {
       grossRevenue: selected.grossRevenue,
       refunds: 0,
