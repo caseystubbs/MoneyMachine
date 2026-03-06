@@ -7,13 +7,84 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Transaction {
+enum TransactionType {
+  INCOME
+  REFUND
+  FEE
+  EXPENSE
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum SourceAccount {
+  STRIPE
+  PAYPAL
+  AMEX
+  MANUAL
+}
+
+enum BusinessUnit {
+  PUBLISHING
+  MEDIA
+  COMBINED
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  group     String?  // optional grouping like "Marketing Tech"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rules        CategoryRule[]
+  transactions Transaction[]
+}
+
+model CategoryRule {
   id          String   @id @default(cuid())
+  contains    String   // match text in description/vendor
+  categoryId  String
   createdAt   DateTime @default(now())
-  date        DateTime // The actual date of the sale/expense
-  amount      Float    // Positive for income, Negative for expense
-  source      String   // "Stripe", "PayPal", "Amex"
-  type        String   // "Income" or "Expense"
-  category    String?  // "Ads", "Hosting", "Software", "Sales"
-  description String?  // "Payment from Customer X"
+
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([contains])
+  @@index([categoryId])
+}
+
+model Transaction {
+  id            String          @id @default(cuid())
+  date          DateTime
+  amount        Decimal         @db.Numeric(14, 2) // positive or negative allowed
+  description   String
+  vendor        String?
+  currency      String          @default("USD")
+
+  type          TransactionType
+  source        SourceAccount
+  businessUnit  BusinessUnit    @default(COMBINED)
+
+  monthKey      String          // "2026-02"
+  externalId    String?         // stripe charge id, paypal txn id, etc.
+  raw           Json?           // store full original row if you want
+
+  categoryId    String?
+  category      Category?       @relation(fields: [categoryId], references: [id])
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([monthKey])
+  @@index([type])
+  @@index([source])
+  @@index([businessUnit])
+  @@index([externalId])
+  @@index([categoryId])
+}
+
+model MonthClose {
+  id          String   @id @default(cuid())
+  monthKey    String   @unique // "2026-02"
+  closedAt    DateTime @default(now())
+  notes       String?
 }
