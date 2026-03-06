@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Report = {
   monthKey: string;
@@ -24,7 +24,7 @@ function fmtMoney(n: number) {
 }
 
 export default function DashboardPage() {
-  const [monthKey, setMonthKey] = useState(() => {
+  const [monthKey, setMonthKey] = useState<string>(() => {
     const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -32,118 +32,81 @@ export default function DashboardPage() {
   });
 
   const [report, setReport] = useState<Report | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    setLoading(true);
     setError("");
 
     fetch(`/api/report/${monthKey}`)
       .then(async (r) => {
-        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        if (!r.ok) throw new Error(`API error ${r.status}`);
         return r.json();
       })
-      .then((data) => setReport(data))
-      .catch((e) => setError(String(e?.message ?? e)))
-      .finally(() => setLoading(false));
+      .then((data: Report) => setReport(data))
+      .catch((e: unknown) => {
+        setReport(null);
+        setError(e instanceof Error ? e.message : String(e));
+      });
   }, [monthKey]);
 
-  const tiles = useMemo(() => {
-    if (!report) return [];
-    const k = report.kpis;
-    return [
-      { label: "Gross Sales", value: fmtMoney(k.grossSales) },
-      { label: "Refunds", value: fmtMoney(k.refunds) },
-      { label: "Fees", value: fmtMoney(k.fees) },
-      { label: "Net Revenue", value: fmtMoney(k.netRevenue) },
-      { label: "Total Costs", value: fmtMoney(k.totalCosts) },
-      { label: "Net Profit", value: fmtMoney(k.netProfit) },
-      { label: "Profit Margin", value: `${(k.profitMargin * 100).toFixed(1)}%` }
-    ];
-  }, [report]);
+  if (!report) {
+    return (
+      <div style={{ padding: 40, fontFamily: "system-ui" }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800 }}>MoneyMachine Dashboard</h1>
+        <p style={{ marginTop: 8, opacity: 0.8 }}>No data yet for {monthKey}</p>
+        {error && <p style={{ marginTop: 12, color: "#ff6b6b" }}>{error}</p>}
+      </div>
+    );
+  }
+
+  const k = report.kpis;
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center" }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700 }}>MoneyMachine — Monthly Dashboard</h1>
+    <div style={{ padding: 40, fontFamily: "system-ui" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700 }}>
+        MoneyMachine Monthly Dashboard
+      </h1>
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span style={{ opacity: 0.8 }}>Month</span>
-          <input
-            value={monthKey}
-            onChange={(e) => setMonthKey(e.target.value)}
-            placeholder="YYYY-MM"
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "transparent",
-              color: "inherit"
-            }}
-          />
-        </div>
+      <div style={{ marginTop: 20 }}>
+        <input
+          value={monthKey}
+          onChange={(e) => setMonthKey(e.target.value)}
+          placeholder="YYYY-MM"
+          style={{ padding: 10 }}
+        />
       </div>
 
-      <div style={{ height: 16 }} />
+      <div style={{ marginTop: 30 }}>
+        <h2 style={{ marginBottom: 10 }}>KPI</h2>
+        <p>Gross Sales: {fmtMoney(k.grossSales)}</p>
+        <p>Refunds: {fmtMoney(k.refunds)}</p>
+        <p>Fees: {fmtMoney(k.fees)}</p>
+        <p>Net Revenue: {fmtMoney(k.netRevenue)}</p>
+        <p>Total Costs: {fmtMoney(k.totalCosts)}</p>
+        <p>Net Profit: {fmtMoney(k.netProfit)}</p>
+      </div>
 
-      {loading && <div style={{ opacity: 0.8 }}>Loading…</div>}
-      {error && <div style={{ color: "#ff6b6b" }}>{error}</div>}
+      <div style={{ marginTop: 30 }}>
+        <h2 style={{ marginBottom: 10 }}>Cost Summary</h2>
 
-      {!loading && !error && !report && (
-        <div style={{ opacity: 0.8 }}>
-          No data yet for {monthKey}. Next step: import transactions.
-        </div>
-      )}
+        <table style={{ width: "100%", marginTop: 10 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>Category</th>
+              <th style={{ textAlign: "right" }}>Amount</th>
+            </tr>
+          </thead>
 
-      {report && (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
-            {tiles.map((t) => (
-              <div
-                key={t.label}
-                style={{
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 14,
-                  padding: 14
-                }}
-              >
-                <div style={{ fontSize: 12, opacity: 0.7 }}>{t.label}</div>
-                <div style={{ fontSize: 18, fontWeight: 700, marginTop: 6 }}>{t.value}</div>
-              </div>
+          <tbody>
+            {report.costSummary.map((c) => (
+              <tr key={c.name}>
+                <td>{c.name}</td>
+                <td style={{ textAlign: "right" }}>{fmtMoney(c.amount)}</td>
+              </tr>
             ))}
-          </div>
-
-          <div style={{ height: 16 }} />
-
-          <div
-            style={{
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 14,
-              padding: 14
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 10 }}>Cost Summary</div>
-
-            <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
-              <thead style={{ opacity: 0.7 }}>
-                <tr>
-                  <th style={{ textAlign: "left", padding: "10px 0" }}>Category</th>
-                  <th style={{ textAlign: "right", padding: "10px 0" }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.costSummary.map((c) => (
-                  <tr key={c.name} style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}>
-                    <td style={{ padding: "10px 0" }}>{c.name}</td>
-                    <td style={{ padding: "10px 0", textAlign: "right" }}>{fmtMoney(c.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
