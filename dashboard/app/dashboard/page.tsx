@@ -47,6 +47,8 @@ function sourceLabel(source: string) {
     YOUTUBE: "YouTube",
     MANUAL: "Manual",
     AMEX: "Amex",
+    PAYMENTS_AI: "Payments AI",
+    SHEET: "Sheet",
   };
 
   return map[source] || source;
@@ -63,22 +65,30 @@ function cardStyle(): React.CSSProperties {
 }
 
 export default function DashboardPage() {
-  const [monthKey, setMonthKey] = useState(() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    return `${y}-${m}`;
-  });
-
+  const [monthKey, setMonthKey] = useState("2026-02");
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
+    setError("");
 
     fetch(`/api/report/${monthKey}`)
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json();
+
+        if (!r.ok) {
+          throw new Error(data.error || `Failed to load ${monthKey}`);
+        }
+
+        return data;
+      })
       .then((data) => setReport(data))
+      .catch((err) => {
+        setReport(null);
+        setError(err instanceof Error ? err.message : "Unknown dashboard error");
+      })
       .finally(() => setLoading(false));
   }, [monthKey]);
 
@@ -155,8 +165,26 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {error && (
+          <div
+            style={{
+              marginBottom: 20,
+              padding: 16,
+              borderRadius: 12,
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              color: "#fecaca",
+              fontWeight: 600,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         {loading && (
-          <div style={{ color: "#94a3b8", marginBottom: 20 }}>Loading dashboard…</div>
+          <div style={{ color: "#94a3b8", marginBottom: 20 }}>
+            Loading dashboard…
+          </div>
         )}
 
         {report && (
