@@ -32,7 +32,7 @@ enum BusinessUnit {
 model Category {
   id        String   @id @default(cuid())
   name      String   @unique
-  group     String?  // optional grouping like "Marketing Tech"
+  group     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -41,10 +41,10 @@ model Category {
 }
 
 model CategoryRule {
-  id          String   @id @default(cuid())
-  contains    String   // match text in description/vendor
-  categoryId  String
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  contains   String
+  categoryId String
+  createdAt  DateTime @default(now())
 
   category Category @relation(fields: [categoryId], references: [id])
 
@@ -53,26 +53,26 @@ model CategoryRule {
 }
 
 model Transaction {
-  id            String          @id @default(cuid())
-  date          DateTime
-  amount        Decimal         @db.Numeric(14, 2) // positive or negative allowed
-  description   String
-  vendor        String?
-  currency      String          @default("USD")
+  id           String          @id @default(cuid())
+  date         DateTime
+  amount       Decimal         // ✅ no @db.Numeric annotation
+  description  String
+  vendor       String?
+  currency     String          @default("USD")
 
-  type          TransactionType
-  source        SourceAccount
-  businessUnit  BusinessUnit    @default(COMBINED)
+  type         TransactionType
+  source       SourceAccount
+  businessUnit BusinessUnit    @default(COMBINED)
 
-  monthKey      String          // "2026-02"
-  externalId    String?         // stripe charge id, paypal txn id, etc.
-  raw           Json?           // store full original row if you want
+  monthKey     String          // "YYYY-MM"
+  externalId   String?
+  raw          Json?
 
-  categoryId    String?
-  category      Category?       @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  category     Category?       @relation(fields: [categoryId], references: [id])
 
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@index([monthKey])
   @@index([type])
@@ -83,8 +83,8 @@ model Transaction {
 }
 
 model MonthClose {
-  id          String   @id @default(cuid())
-  monthKey    String   @unique // "2026-02"
-  closedAt    DateTime @default(now())
-  notes       String?
+  id       String   @id @default(cuid())
+  monthKey String   @unique
+  closedAt DateTime @default(now())
+  notes    String?
 }
