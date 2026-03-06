@@ -1,0 +1,21 @@
+[33me4ce504[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m dashboard update
+[33m288e204[m cleaner upload page
+[33m5498e24[m add upload page
+[33m97ed31d[m test
+[33m54e755d[m fix papaparse typing
+[33m6649dcb[m new Dir
+[33m93a51fb[m fixed bugs
+[33m7d68891[m update
+[33m0b515c3[m monthkey
+[33md2f0a27[m prism update
+[33m9e1fe24[m dashboard build
+[33m5e9f233[m new deploy fix database crash
+[33m6c07509[m the new update deploy
+[33mfc0e4d3[m Add Debug Logger
+[33me26f9dc[m Force instant refresh
+[33mb946719[m Updated PayPal to include Income
+[33m720a6ca[m Fix Stripe API version
+[33mde2f209[m Added Stripe Dashboard
+[33m6391f1b[m Add npm config to fix Railway build
+[33m6337725[m Day 1: Created dashboard skeleton
+[33md145460[m Initial commit
