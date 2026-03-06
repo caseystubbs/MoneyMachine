@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+type DetailItem = {
+  label: string;
+  amount: number;
+};
+
 type Report = {
   monthKey: string;
+  availableMonths: { label: string; value: string }[];
   kpis: {
     grossRevenue: number;
     refunds: number;
@@ -14,7 +20,7 @@ type Report = {
     profitMargin: number;
   };
   revenueBySource: { source: string; amount: number }[];
-  expenseBreakdown: { category: string; amount: number }[];
+  expenseBreakdown: { category: string; amount: number; details: DetailItem[] }[];
   monthlyTrend: { month: string; revenue: number; expenses: number; profit: number }[];
   transactions: {
     id: string;
@@ -69,6 +75,11 @@ export default function DashboardPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<{
+    name: string;
+    amount: number;
+    details: DetailItem[];
+  } | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -84,7 +95,10 @@ export default function DashboardPage() {
 
         return data;
       })
-      .then((data) => setReport(data))
+      .then((data) => {
+        setReport(data);
+        setSelectedCategory(null);
+      })
       .catch((err) => {
         setReport(null);
         setError(err instanceof Error ? err.message : "Unknown dashboard error");
@@ -150,18 +164,28 @@ export default function DashboardPage() {
           </div>
 
           <div>
-            <input
+            <select
               value={monthKey}
               onChange={(e) => setMonthKey(e.target.value)}
-              placeholder="YYYY-MM"
               style={{
                 padding: "12px 14px",
                 borderRadius: 12,
                 border: "1px solid rgba(148,163,184,0.2)",
                 background: "rgba(255,255,255,0.04)",
                 color: "#f8fafc",
+                minWidth: 220,
               }}
-            />
+            >
+              {report?.availableMonths?.map((m) => (
+                <option key={m.value} value={m.value} style={{ color: "#111827" }}>
+                  {m.label}
+                </option>
+              )) || (
+                <option value={monthKey} style={{ color: "#111827" }}>
+                  {monthKey}
+                </option>
+              )}
+            </select>
           </div>
         </div>
 
@@ -247,7 +271,7 @@ export default function DashboardPage() {
               <div style={cardStyle()}>
                 <h2 style={{ marginTop: 0, marginBottom: 8 }}>Expense Breakdown</h2>
                 <p style={{ color: "#94a3b8", marginTop: 0 }}>
-                  Software, contractors, rent, fees, and other costs
+                  Click a category to drill into what it means
                 </p>
 
                 <table style={{ width: "100%", marginTop: 16, borderCollapse: "collapse" }}>
@@ -261,9 +285,21 @@ export default function DashboardPage() {
                     {report.expenseBreakdown.map((e) => (
                       <tr
                         key={e.category}
-                        style={{ borderTop: "1px solid rgba(148,163,184,0.10)" }}
+                        onClick={() =>
+                          setSelectedCategory({
+                            name: e.category,
+                            amount: e.amount,
+                            details: e.details,
+                          })
+                        }
+                        style={{
+                          borderTop: "1px solid rgba(148,163,184,0.10)",
+                          cursor: "pointer",
+                        }}
                       >
-                        <td style={{ padding: "10px 8px" }}>{e.category}</td>
+                        <td style={{ padding: "10px 8px", fontWeight: 700 }}>
+                          {e.category}
+                        </td>
                         <td style={{ padding: "10px 8px", textAlign: "right", fontWeight: 700 }}>
                           {fmtMoney(e.amount)}
                         </td>
@@ -273,6 +309,77 @@ export default function DashboardPage() {
                 </table>
               </div>
             </div>
+
+            {selectedCategory && (
+              <div style={{ ...cardStyle(), marginBottom: 20 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 10,
+                  }}
+                >
+                  <div>
+                    <h2 style={{ margin: 0 }}>
+                      {selectedCategory.name} Drill-Down
+                    </h2>
+                    <p style={{ color: "#94a3b8", marginTop: 8, marginBottom: 0 }}>
+                      Total: {fmtMoney(selectedCategory.amount)}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      color: "#f8fafc",
+                      border: "1px solid rgba(148,163,184,0.16)",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <table style={{ width: "100%", marginTop: 16, borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ color: "#94a3b8", textAlign: "left" }}>
+                      <th style={{ padding: "10px 8px" }}>Line Item</th>
+                      <th style={{ padding: "10px 8px", textAlign: "right" }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedCategory.details.length > 0 ? (
+                      selectedCategory.details.map((item, idx) => (
+                        <tr
+                          key={`${selectedCategory.name}-${idx}`}
+                          style={{ borderTop: "1px solid rgba(148,163,184,0.10)" }}
+                        >
+                          <td style={{ padding: "10px 8px" }}>{item.label}</td>
+                          <td style={{ padding: "10px 8px", textAlign: "right", fontWeight: 700 }}>
+                            {fmtMoney(item.amount)}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={2}
+                          style={{ padding: "12px 8px", color: "#94a3b8" }}
+                        >
+                          No detail items found for this category.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             <div style={{ ...cardStyle(), marginBottom: 20 }}>
               <h2 style={{ marginTop: 0, marginBottom: 8 }}>Monthly Trend</h2>
