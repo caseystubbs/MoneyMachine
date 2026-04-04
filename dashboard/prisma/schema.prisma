@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ───────────────────────────────────────────────
+
 enum TransactionType {
   INCOME
   REFUND
@@ -19,7 +21,10 @@ enum TransactionType {
 enum SourceAccount {
   STRIPE
   PAYPAL
+  PLAID
   AMEX
+  YOUTUBE
+  SUBSTACK
   MANUAL
 }
 
@@ -28,6 +33,8 @@ enum BusinessUnit {
   MEDIA
   COMBINED
 }
+
+// ─── Categories ──────────────────────────────────────────
 
 model Category {
   id        String   @id @default(cuid())
@@ -52,10 +59,12 @@ model CategoryRule {
   @@index([categoryId])
 }
 
+// ─── Transactions ────────────────────────────────────────
+
 model Transaction {
   id           String          @id @default(cuid())
   date         DateTime
-  amount       Decimal         // ✅ no @db.Numeric annotation
+  amount       Decimal
   description  String
   vendor       String?
   currency     String          @default("USD")
@@ -65,11 +74,14 @@ model Transaction {
   businessUnit BusinessUnit    @default(COMBINED)
 
   monthKey     String          // "YYYY-MM"
-  externalId   String?
+  externalId   String?         @unique
   raw          Json?
 
   categoryId   String?
   category     Category?       @relation(fields: [categoryId], references: [id])
+
+  plaidAccountId String?
+  plaidAccount   PlaidAccount?  @relation(fields: [plaidAccountId], references: [id])
 
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
@@ -78,9 +90,67 @@ model Transaction {
   @@index([type])
   @@index([source])
   @@index([businessUnit])
-  @@index([externalId])
   @@index([categoryId])
+  @@index([plaidAccountId])
+  @@index([date])
 }
+
+// ─── Plaid ───────────────────────────────────────────────
+
+model PlaidItem {
+  id              String   @id @default(cuid())
+  institutionId   String?
+  institutionName String?
+  accessToken     String   // encrypted in production
+  itemId          String   @unique
+  cursor          String?  // Plaid sync cursor for incremental updates
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  accounts PlaidAccount[]
+}
+
+model PlaidAccount {
+  id             String   @id @default(cuid())
+  plaidAccountId String   @unique
+  name           String
+  officialName   String?
+  type           String   // checking, savings, credit, etc.
+  subtype        String?
+  mask           String?  // last 4 digits
+
+  currentBalance  Decimal?
+  availableBalance Decimal?
+  balanceUpdatedAt DateTime?
+
+  plaidItemId String
+  plaidItem   PlaidItem @relation(fields: [plaidItemId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([plaidItemId])
+}
+
+// ─── Sync Tracking ───────────────────────────────────────
+
+model SyncLog {
+  id        String        @id @default(cuid())
+  source    SourceAccount
+  status    String        // "success" | "error"
+  message   String?
+  txAdded   Int           @default(0)
+  txUpdated Int           @default(0)
+  duration  Int?          // milliseconds
+  createdAt DateTime      @default(now())
+
+  @@index([source])
+  @@index([createdAt])
+}
+
+// ─── Month Close ─────────────────────────────────────────
 
 model MonthClose {
   id       String   @id @default(cuid())

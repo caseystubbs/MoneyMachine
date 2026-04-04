@@ -8,7 +8,9 @@
     "postinstall": "prisma generate",
     "prestart": "prisma db push",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx prisma/seed.ts",
+    "sync": "curl -X POST http://localhost:3000/api/sync/all"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -34,6 +36,7 @@
     "eslint-config-next": "16.1.1",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.0",
     "typescript": "^5"
   }
 }
