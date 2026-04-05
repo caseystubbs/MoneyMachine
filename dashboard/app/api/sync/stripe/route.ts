@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { toMonthKey, classifyTransaction, logSync, getSyncDateRange } from "@/lib/sync-utils";
 
 const stripe = new Stripe((process.env.STRIPE_SECRET_KEY || "").trim(), {
-  apiVersion: "2026-02-25.clover",
+  apiVersion: "2025-12-15.clover",
 });
 
 export async function POST() {

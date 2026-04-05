@@ -58,14 +58,26 @@ export async function GET(
 
     const revenueBySource: Record<string, number> = {};
     const expenseByCategory: Record<string, { amount: number; details: { label: string; amount: number }[] }> = {};
+    const revenueBySubtype: Record<string, number> = {};
+    let ignoredTotal = 0;
+    let oneTimeTotal = 0;
 
     for (const tx of monthTxns) {
       const amt = toNumber(tx.amount as any);
+
+      // Skip ignored transactions from P&L
+      if ((tx as any).isIgnored) {
+        ignoredTotal += Math.abs(amt);
+        continue;
+      }
 
       switch (tx.type) {
         case "INCOME":
           grossRevenue += amt;
           revenueBySource[tx.source] = (revenueBySource[tx.source] || 0) + amt;
+          // Track by subtype if available
+          const subtype = (tx as any).subtype || (tx as any).subcategory || "Other";
+          revenueBySubtype[subtype] = (revenueBySubtype[subtype] || 0) + amt;
           break;
         case "REFUND":
           refunds += Math.abs(amt);
@@ -74,27 +86,39 @@ export async function GET(
           fees += Math.abs(amt);
           break;
         case "EXPENSE":
-          expenses += Math.abs(amt);
-          const cat = tx.category?.name || "Uncategorized";
+          const expAmt = Math.abs(amt);
+          if ((tx as any).isOneTime) {
+            oneTimeTotal += expAmt;
+          }
+          expenses += expAmt;
+          const cat = (tx as any).subcategory || tx.category?.name || "Uncategorized";
           if (!expenseByCategory[cat]) {
             expenseByCategory[cat] = { amount: 0, details: [] };
           }
-          expenseByCategory[cat].amount += Math.abs(amt);
+          expenseByCategory[cat].amount += expAmt;
           expenseByCategory[cat].details.push({
             label: tx.description,
-            amount: Math.abs(amt),
+            amount: expAmt,
           });
           break;
       }
     }
 
     const netRevenue = grossRevenue - refunds - fees;
+    const operatingExpenses = expenses - oneTimeTotal;
     const netProfit = netRevenue - expenses;
+    const netProfitBeforeOneTime = netRevenue - operatingExpenses;
     const profitMargin = grossRevenue > 0 ? netProfit / grossRevenue : 0;
 
     // --- Revenue by source ---
     const revenueBySourceArr = Object.entries(revenueBySource)
       .map(([source, amount]) => ({ source, amount }))
+      .filter((r) => r.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
+
+    // --- Revenue by subtype ---
+    const revenueBySubtypeArr = Object.entries(revenueBySubtype)
+      .map(([subtype, amount]) => ({ subtype, amount }))
       .filter((r) => r.amount > 0)
       .sort((a, b) => b.amount - a.amount);
 
@@ -202,7 +226,11 @@ export async function GET(
         fees,
         netRevenue,
         expenses,
+        operatingExpenses,
+        oneTimeExpenses: oneTimeTotal,
+        ignoredTotal,
         netProfit,
+        netProfitBeforeOneTime,
         profitMargin,
       },
       ttm: {
@@ -218,6 +246,7 @@ export async function GET(
         accounts: cashAccounts,
       },
       revenueBySource: revenueBySourceArr,
+      revenueBySubtype: revenueBySubtypeArr,
       expenseBreakdown,
       monthlyTrend,
       transactions,

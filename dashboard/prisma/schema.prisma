@@ -59,6 +59,32 @@ model CategoryRule {
   @@index([categoryId])
 }
 
+// ─── Categorization Rules Engine ─────────────────────────
+
+model CategorizationRule {
+  id            String   @id @default(cuid())
+  priority      Int      @default(100)
+  sourceSystem  String?  // STRIPE, PAYPAL, PLAID, AMEX, null=any
+  matchField    String   @default("description") // description, vendor, counterparty
+  matchType     String   @default("contains")    // exact, contains, regex
+  matchValue    String
+  category      String   // Revenue, Expense, Fee, Transfer, etc.
+  subcategory   String?  // Software, Contractor, Processing, etc.
+  subtype       String?  // Hosting, AI, Design, YouTube, etc.
+  txType        String?  // override transaction type: INCOME, EXPENSE, FEE, TRANSFER
+  isIgnored     Boolean  @default(false)
+  isOneTime     Boolean  @default(false)
+  isBusinessRelevant Boolean @default(true)
+  notes         String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([active])
+  @@index([priority])
+  @@index([matchValue])
+}
+
 // ─── Transactions ────────────────────────────────────────
 
 model Transaction {
@@ -77,8 +103,16 @@ model Transaction {
   externalId   String?         @unique
   raw          Json?
 
+  // Categorization fields
   categoryId   String?
   category     Category?       @relation(fields: [categoryId], references: [id])
+  subcategory  String?
+  subtype      String?
+  isIgnored    Boolean         @default(false)
+  isOneTime    Boolean         @default(false)
+  isBusinessRelevant Boolean   @default(true)
+  ruleIdApplied String?        // which CategorizationRule was applied
+  manualOverride Boolean       @default(false) // true if human reclassified
 
   plaidAccountId String?
   plaidAccount   PlaidAccount?  @relation(fields: [plaidAccountId], references: [id])
@@ -93,6 +127,8 @@ model Transaction {
   @@index([categoryId])
   @@index([plaidAccountId])
   @@index([date])
+  @@index([isIgnored])
+  @@index([subcategory])
 }
 
 // ─── Plaid ───────────────────────────────────────────────
@@ -157,4 +193,14 @@ model MonthClose {
   monthKey String   @unique
   closedAt DateTime @default(now())
   notes    String?
+}
+
+// ─── Monthly Reports ─────────────────────────────────────
+
+model MonthlyReport {
+  id          String   @id @default(cuid())
+  monthKey    String   @unique
+  reportJson  Json
+  generatedAt DateTime @default(now())
+  status      String   @default("draft") // draft, final
 }

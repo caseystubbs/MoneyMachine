@@ -320,6 +320,21 @@ export default function DashboardV2() {
             )}
 
             <a
+              href="/review"
+              style={{
+                padding: "8px 14px",
+                borderRadius: 8,
+                border: `1px solid ${BORDER}`,
+                background: "transparent",
+                color: TEXT_MID,
+                fontWeight: 600,
+                fontSize: 13,
+                textDecoration: "none",
+              }}
+            >
+              Review Txns
+            </a>
+            <a
               href="/connect"
               style={{
                 padding: "8px 14px",
